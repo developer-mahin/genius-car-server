@@ -25,22 +25,24 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 const servicesCollection = client.db("genius-car").collection("services")
 const orderCollection = client.db("genius-car").collection("orders")
 
-function verifyJWT(req, res, next) {
-    const authHeader = req.headers.authorization;
 
+
+function verifyJwt(req, res, next) {
+    const authHeader = req.headers.authorization
     if (!authHeader) {
-        return res.status(401).send({ message: 'unauthorized access' });
+        return res.status(401).send({ message: "Unauthorized access" })
     }
-    const token = authHeader.split(' ')[1];
-
+    const token = authHeader.split(' ')[1]
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
         if (err) {
-            return res.status(403).send({ message: 'Forbidden access' });
+            return res.status(403).send({ message: "Forbidden  Access" })
         }
-        req.decoded = decoded;
-        next();
+        req.decoded = decoded
+        next()
     })
+
 }
+
 
 async function run() {
 
@@ -56,12 +58,13 @@ async function run() {
 
 run()
 
-// jwt token 
+
 app.post("/jwt", (req, res) => {
     const user = req.body
-    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "5s" })
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10d" })
     res.send({ token })
 })
+
 
 // service api
 app.get("/services", async (req, res) => {
@@ -109,13 +112,12 @@ app.get("/services/:id", async (req, res) => {
 })
 
 // order api 
-app.get("/orders", verifyJWT, async (req, res) => {
+app.get("/orders", verifyJwt, async (req, res) => {
     try {
-        const decoded = req.decoded;
-        console.log(decoded);
 
+        const decoded = req.decoded
         if (decoded.email !== req.query.email) {
-            res.status(403).send({message: "Unauthorized access"})
+            res.status(401).send({ message: "Unauthorized access" })
         }
 
         let query = {}

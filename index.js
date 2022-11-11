@@ -70,8 +70,24 @@ app.post("/jwt", (req, res) => {
 app.get("/services", async (req, res) => {
 
     try {
-        const query = {}
-        const cursor = servicesCollection.find(query)
+        // const query = { price: { $gt: 150 } }
+        // const query = {price: {$lt: 120}}
+        // const query = {price: {$eq: 30}}
+        // const query = {price: {$gte: 30}}
+        // const query = {price: {$in: [30, 20]}}
+        // const search 
+        // const query = {price: {$ne: 20}}
+        const search = req.query.search
+        let query = {}
+        if (search.length) {
+            query = {
+                $text: {
+                    $search: search
+                }
+            }
+        }
+        const order = req.query.order === "asc" ? 1 : -1
+        const cursor = servicesCollection.find(query).sort({ price: order })
         const services = await cursor.toArray()
         res.send({
             success: true,
